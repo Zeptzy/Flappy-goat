@@ -32,11 +32,6 @@ var myGameArea = {
                 accelerate(0.05);
             }
         });
-        window.addEventListener('keydown', function(e) {
-            if (e.keyCode === 82) {
-                resetGame();
-            }
-        });
     },
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -52,7 +47,7 @@ function component(width, height, color, x, y, type) {
     this.score = 0;
     this.width = width;
     this.height = height;
-    this.speedX = 0;
+    this.speedX = 0;        
     this.speedY = 0;
     this.x = x;
     this.y = y;
@@ -74,13 +69,24 @@ function component(width, height, color, x, y, type) {
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
+
+
     }
     this.newPos = function() {
         this.gravitySpeed += this.gravity;
         this.x += this.speedX;
         this.y += this.speedY + this.gravitySpeed;
         this.hitBottom();
+        this.hitTop(); 
     }
+    this.hitTop = function() {
+        var rocktop = 0;  
+        if (this.y < rocktop) {
+          this.y = rocktop;
+          this.gravitySpeed = 0; 
+        }
+      }
+
     this.hitBottom = function() {
         var rockbottom = myGameArea.canvas.height - this.height;
         if (this.y > rockbottom) {
@@ -110,6 +116,8 @@ function component(width, height, color, x, y, type) {
     }
 }
 
+var speedIncrease = 0;
+
 function updateGameArea() {
     var x, height, gap, minHeight, maxHeight, minGap, maxGap;
     for (i = 0; i < myObstacles.length; i += 1) {
@@ -122,6 +130,16 @@ function updateGameArea() {
         }
     }
     myGameArea.clear();
+
+    if (myGameArea.frameNo % 100 === 0) {
+        speedIncrease += 0.2;
+    }
+
+
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].speedX = -1 - speedIncrease;
+    }
+
     myGameArea.frameNo += 1;
     if (myGameArea.frameNo == 1 || everyinterval(150)) {
         x = myGameArea.canvas.width;
@@ -135,7 +153,7 @@ function updateGameArea() {
         myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
     }
     for (i = 0; i < myObstacles.length; i += 1) {
-        myObstacles[i].x += -1;
+        myObstacles[i].x += myObstacles[i].speedX; 
         myObstacles[i].update();
     }
     myScore.text = "SCORE: " + myGameArea.frameNo;
@@ -143,6 +161,7 @@ function updateGameArea() {
     myGamePiece.newPos();
     myGamePiece.update();
 }
+
 
 function accelerate(n) {
     myGamePiece.gravity = n;
